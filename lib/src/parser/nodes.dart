@@ -5,6 +5,8 @@ import 'grammar.dart';
 enum HeaderLevel { h1, h2 }
 
 sealed class WikiNode {
+  const WikiNode();
+
   /// Write the node's content to a [buffer] as wiki text.
   void writeWikiTextToBuffer(StringBuffer buffer);
 
@@ -16,12 +18,16 @@ sealed class WikiNode {
   }
 }
 
-sealed class BlockNode extends WikiNode {}
+sealed class BlockNode extends WikiNode {
+  const BlockNode();
+}
 
-sealed class InlineNode extends WikiNode {}
+sealed class InlineNode extends WikiNode {
+  const InlineNode();
+}
 
 final class HeaderNode extends BlockNode {
-  HeaderNode(this.level, this.children);
+  const HeaderNode(this.level, this.children);
 
   final HeaderLevel level;
   final List<InlineNode> children;
@@ -46,7 +52,7 @@ final class HeaderNode extends BlockNode {
 }
 
 final class ParagraphNode extends BlockNode {
-  ParagraphNode(this.children);
+  const ParagraphNode(this.children);
 
   final List<InlineNode> children;
 
@@ -61,8 +67,20 @@ final class ParagraphNode extends BlockNode {
   String toString() => 'ParagraphNode($children)';
 }
 
+final class EmptyBlockNode extends BlockNode {
+  const EmptyBlockNode();
+
+  @override
+  void writeWikiTextToBuffer(StringBuffer buffer) {
+    //empty block is empty so it does not write
+  }
+
+  @override
+  String toString() => 'EmptyBlockNode()';
+}
+
 final class UnorderedListNode extends BlockNode {
-  UnorderedListNode(this.children);
+  const UnorderedListNode(this.children);
 
   final List<InlineNode> children;
 
@@ -80,7 +98,7 @@ final class UnorderedListNode extends BlockNode {
 }
 
 final class OrderedListNode extends BlockNode {
-  OrderedListNode(this.position, this.children);
+  const OrderedListNode(this.position, this.children);
 
   final int position;
   final List<InlineNode> children;
@@ -99,7 +117,7 @@ final class OrderedListNode extends BlockNode {
 }
 
 final class TextNode extends InlineNode {
-  TextNode(this.text);
+  const TextNode(this.text);
 
   final String text;
 
@@ -113,7 +131,7 @@ final class TextNode extends InlineNode {
 }
 
 final class BoldNode extends InlineNode {
-  BoldNode(this.text);
+  const BoldNode(this.text);
 
   final String text;
 
@@ -129,7 +147,7 @@ final class BoldNode extends InlineNode {
 }
 
 final class ItalicNode extends InlineNode {
-  ItalicNode(this.text);
+  const ItalicNode(this.text);
 
   final String text;
 
@@ -145,7 +163,7 @@ final class ItalicNode extends InlineNode {
 }
 
 final class InlineLatexNode extends InlineNode {
-  InlineLatexNode(this.latex);
+  const InlineLatexNode(this.latex);
 
   final String latex;
 
@@ -161,7 +179,7 @@ final class InlineLatexNode extends InlineNode {
 }
 
 final class DisplayLatexNode extends InlineNode {
-  DisplayLatexNode(this.latex);
+  const DisplayLatexNode(this.latex);
 
   final String latex;
 
@@ -177,7 +195,7 @@ final class DisplayLatexNode extends InlineNode {
 }
 
 final class WikiLinkNode extends InlineNode {
-  WikiLinkNode({required this.page, required this.alias});
+  const WikiLinkNode({required this.page, required this.alias});
 
   final String page;
   final String alias;

@@ -62,7 +62,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: WikiCodeEditor(controller: controller),
               ),
             ),
-            if (controller.hasParseError) Text('Parse error'),
           ],
         ),
       ),

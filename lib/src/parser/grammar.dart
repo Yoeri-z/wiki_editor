@@ -114,6 +114,7 @@ class WikiGrammarDefinition extends WikiInlineGrammarDefinition {
       ref0(header1) |
       ref0(unorderedList) |
       ref0(orderedList) |
+      ref0(emptyLine) |
       ref0(paragraph);
 
   Parser header2() =>
@@ -139,4 +140,6 @@ class WikiGrammarDefinition extends WikiInlineGrammarDefinition {
   Parser paragraph() => (ref0(inline).plus() & ref0(newlineOrEnd)).map((v) {
     return ParagraphNode(List<InlineNode>.from(v[0]));
   });
+
+  Parser emptyLine() => ref0(newline).map((_) => EmptyBlockNode());
 }
