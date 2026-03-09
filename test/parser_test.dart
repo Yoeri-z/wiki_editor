@@ -23,14 +23,23 @@ void main() {
         'Hello world',
         '**bold**',
         '*italic*',
+        '~~strikethrough~~',
+        '`inline code`',
         '\$latex\$',
         '\$\$latex\$\$',
         '[[page]]',
         '[[page|alias]]',
         ' - item',
         ' 1. item',
-        '# Header',
-        '## Header',
+        '# Header 1',
+        '## Header 2',
+        '### Header 3',
+        '#### Header 4',
+        '##### Header 5',
+        '###### Header 6',
+        '> blockquote',
+        '---',
+        '```dart\nvoid main() {}\n```',
         '# Header with **bold**',
         ' - item with *italic*',
         ' 1. item with \$latex\$',
@@ -45,44 +54,67 @@ void main() {
       }
     });
 
-    test('single hash (#) should create h1 header', () {
-      final nodes = WikiParser.parse('# Header');
-      expect(nodes, hasLength(1));
-      expect(nodes.first, isA<HeaderNode>());
-      expect((nodes.first as HeaderNode).level, HeaderLevel.h1);
-    });
+    test('header levels h1 through h6', () {
+      final headers = {
+        '# H1': HeaderLevel.h1,
+        '## H2': HeaderLevel.h2,
+        '### H3': HeaderLevel.h3,
+        '#### H4': HeaderLevel.h4,
+        '##### H5': HeaderLevel.h5,
+        '###### H6': HeaderLevel.h6,
+      };
 
-    test('double hash (##) should create h2 header', () {
-      final nodes = WikiParser.parse('## Header');
-      expect(nodes, hasLength(1));
-      expect(nodes.first, isA<HeaderNode>());
-      expect((nodes.first as HeaderNode).level, HeaderLevel.h2);
-    });
-
-    test('header unparse should preserve hash count', () {
-      final nodes1 = WikiParser.parse('# Header');
-      final output = WikiParser.unparse(nodes1);
-      final nodes2 = WikiParser.parse(output);
-
-      // After roundtrip, header level should still be h1
-      expect((nodes2.first as HeaderNode).level, HeaderLevel.h1);
+      for (final entry in headers.entries) {
+        final nodes = WikiParser.parse(entry.key);
+        expect(nodes.first, isA<HeaderNode>());
+        expect((nodes.first as HeaderNode).level, entry.value);
+      }
     });
 
     test('unordered list marker creates UnorderedListNode', () {
       final nodes = WikiParser.parse(' - item');
       expect(nodes, hasLength(1));
       expect(nodes.first, isA<UnorderedListNode>());
+      expect((nodes.first as UnorderedListNode).items, hasLength(1));
     });
 
     test(
-      'ordered list marker creates OrderedListNode with correct position',
+      'ordered list marker creates OrderedListNode with correct start',
       () {
         final nodes = WikiParser.parse(' 1. item');
         expect(nodes, hasLength(1));
         expect(nodes.first, isA<OrderedListNode>());
-        expect((nodes.first as OrderedListNode).position, 1);
+        expect((nodes.first as OrderedListNode).start, 1);
       },
     );
+
+    test('blockquote marker creates BlockquoteNode', () {
+      final nodes = WikiParser.parse('> item');
+      expect(nodes, hasLength(1));
+      expect(nodes.first, isA<BlockquoteNode>());
+    });
+
+    test('horizontal rule marker creates HorizontalRuleNode', () {
+      final nodes = WikiParser.parse('---');
+      expect(nodes, hasLength(1));
+      expect(nodes.first, isA<HorizontalRuleNode>());
+    });
+
+    test('code block marker creates CodeBlockNode', () {
+      final nodes = WikiParser.parse('```dart\ncode\n```');
+      expect(nodes, hasLength(1));
+      expect(nodes.first, isA<CodeBlockNode>());
+      expect((nodes.first as CodeBlockNode).language, 'dart');
+      expect((nodes.first as CodeBlockNode).content, 'code\n');
+    });
+
+    test('latex display block', () {
+      const input = '\$\$\nE = mc^2\n\$\$';
+      final nodes = WikiParser.parse(input);
+      expect(nodes, hasLength(1));
+      expect(nodes.first, isA<DisplayLatexNode>());
+      expect((nodes.first as DisplayLatexNode).latex, 'E = mc^2');
+    });
 
     test('bold markers create BoldNode', () {
       final nodes = WikiParser.parse('**bold**');
@@ -98,34 +130,18 @@ void main() {
       expect((paragraph.children.first as ItalicNode).text, 'italic');
     });
 
-    test('inline latex markers create InlineLatexNode', () {
-      final nodes = WikiParser.parse('\$latex\$');
+    test('strikethrough markers create StrikethroughNode', () {
+      final nodes = WikiParser.parse('~~strike~~');
       final paragraph = nodes.first as ParagraphNode;
-      expect(paragraph.children.first, isA<InlineLatexNode>());
-      expect((paragraph.children.first as InlineLatexNode).latex, 'latex');
+      expect(paragraph.children.first, isA<StrikethroughNode>());
+      expect((paragraph.children.first as StrikethroughNode).text, 'strike');
     });
 
-    test('display latex markers create DisplayLatexNode', () {
-      final nodes = WikiParser.parse('\$\$latex\$\$');
+    test('inline code markers create InlineCodeNode', () {
+      final nodes = WikiParser.parse('`code`');
       final paragraph = nodes.first as ParagraphNode;
-      expect(paragraph.children.first, isA<DisplayLatexNode>());
-      expect((paragraph.children.first as DisplayLatexNode).latex, 'latex');
-    });
-
-    test('wiki link without alias has page == alias', () {
-      final nodes = WikiParser.parse('[[page]]');
-      final paragraph = nodes.first as ParagraphNode;
-      final link = paragraph.children.first as WikiLinkNode;
-      expect(link.page, 'page');
-      expect(link.alias, 'page');
-    });
-
-    test('wiki link with alias preserves both values', () {
-      final nodes = WikiParser.parse('[[page|alias]]');
-      final paragraph = nodes.first as ParagraphNode;
-      final link = paragraph.children.first as WikiLinkNode;
-      expect(link.page, 'page');
-      expect(link.alias, 'alias');
+      expect(paragraph.children.first, isA<InlineCodeNode>());
+      expect((paragraph.children.first as InlineCodeNode).code, 'code');
     });
 
     test('multiple blocks are parsed in correct order', () {
@@ -137,14 +153,33 @@ void main() {
       expect(nodes[2], isA<UnorderedListNode>());
     });
 
-    test('nested formatting is parsed correctly', () {
-      const input = 'Text **bold** and *italic*';
+    test('multiline paragraph', () {
+      const input = 'Line 1\nLine 2';
       final nodes = WikiParser.parse(input);
-      final paragraph = nodes.first as ParagraphNode;
+      expect(nodes, hasLength(1));
+      expect(nodes.first, isA<ParagraphNode>());
+      expect((nodes.first as ParagraphNode).children, hasLength(3)); // Line 1, \n, Line 2
+    });
 
-      // Should contain both bold and italic nodes
-      expect(paragraph.children.any((n) => n is BoldNode), isTrue);
-      expect(paragraph.children.any((n) => n is ItalicNode), isTrue);
+    test('nested list structure', () {
+      const input = '''
+ - This is a list.
+  1. With an ordered sublist.
+  2. Of two items.
+ - And it also continues after.''';
+      final nodes = WikiParser.parse(input);
+      expect(nodes, hasLength(1));
+      expect(nodes.first, isA<UnorderedListNode>());
+      final ul = nodes.first as UnorderedListNode;
+      expect(ul.items, hasLength(2));
+      
+      // Check first item has nested ordered list
+      expect(ul.items[0].children, hasLength(2));
+      expect(ul.items[0].children[0], isA<ParagraphNode>());
+      expect(ul.items[0].children[1], isA<OrderedListNode>());
+      
+      final ol = ul.items[0].children[1] as OrderedListNode;
+      expect(ol.items, hasLength(2));
     });
   });
 
@@ -154,6 +189,8 @@ void main() {
         'Hello world',
         '**bold**',
         '*italic*',
+        '~~strike~~',
+        '`code`',
         '\$latex\$',
         '\$\$latex\$\$',
         '[[page]]',

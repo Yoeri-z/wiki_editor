@@ -14,7 +14,38 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: Builder(
+        builder: (context) {
+          final theme = Theme.of(context);
+
+          final primary = theme.primaryColor;
+          final textTheme = theme.textTheme;
+
+          return WikiEditorTheme(
+            themeData: WikiEditorThemeData(
+              boldStyle: textTheme.bodyMedium!.copyWith(
+                color: primary,
+                fontWeight: .w700,
+              ),
+              italicStyle: textTheme.bodyMedium!.copyWith(
+                color: primary,
+                fontStyle: .italic,
+              ),
+              strikethroughStyle: textTheme.bodyMedium!.copyWith(
+                color: primary,
+                decoration: .lineThrough,
+              ),
+              linkStyle: textTheme.bodyMedium!.copyWith(color: primary),
+              latexStyle: textTheme.bodyMedium!.copyWith(color: primary),
+              headerStyle: textTheme.bodyMedium!.copyWith(
+                color: primary,
+                fontWeight: .w700,
+              ),
+            ),
+            child: const MyHomePage(title: 'Flutter Demo Home Page'),
+          );
+        },
+      ),
     );
   }
 }
@@ -54,15 +85,26 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: WikiCodeEditor(controller: controller),
+        child: Center(
+          child: Row(
+            spacing: 20,
+            mainAxisAlignment: .center,
+            children: [
+              SizedBox(
+                width: 400,
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: WikiCodeEditor(controller: controller),
+                  ),
+                ),
               ),
-            ),
-          ],
+              SizedBox(
+                width: 400,
+                child: DisplayWidget(controller: controller),
+              ),
+            ],
+          ),
         ),
       ),
     );

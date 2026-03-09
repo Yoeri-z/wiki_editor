@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:wiki_editor/src/document/wiki_document.dart';
-import 'package:wiki_editor/src/editor/wiki_default_styles.dart';
+import 'package:wiki_editor/src/editor/wiki_editor_theme.dart';
 import 'package:wiki_editor/src/parser/lexer.dart';
 
 class WikiController extends TextEditingController {
@@ -55,18 +55,24 @@ class WikiController extends TextEditingController {
     final List<TextSpan> allLineSpans = [];
 
     for (int i = 0; i < lines.length; i++) {
-      for (final segment in document.getSegments(i)) {
+      final isCode = document.isCodeBlock(i);
+      final isLatex = document.isLatexBlock(i);
+      final segments = document.getSegments(i);
+
+      for (final segment in segments) {
         allLineSpans.add(switch (segment) {
           TokenSegment seg => TextSpan(
             text: seg.text,
-            style: style?.copyWith(
-              color: _getThemeColor(context, seg.type),
-              fontWeight: seg.type == TokenType.bold || seg.type == TokenType.h1
-                  ? FontWeight.bold
-                  : FontWeight.normal,
+            style: style?.merge(
+              _getThemeStyle(context, seg.type, isCode, isLatex),
             ),
           ),
-          TextSegment seg => TextSpan(text: seg.text, style: style),
+          TextSegment seg => TextSpan(
+            text: seg.text,
+            style: style?.merge(
+              _getThemeStyle(context, TokenType.text, isCode, isLatex),
+            ),
+          ),
         });
       }
 
@@ -78,15 +84,42 @@ class WikiController extends TextEditingController {
     return TextSpan(children: allLineSpans, style: style);
   }
 
-  Color _getThemeColor(BuildContext context, TokenType type) {
+  TextStyle _getThemeStyle(
+    BuildContext context,
+    TokenType type,
+    bool isCodeBlock,
+    bool isLatexBlock,
+  ) {
     final theme = WikiEditorTheme.of(context);
+
+    if (isCodeBlock) {
+      return theme.inlineCodeStyle;
+    }
+
+    if (isLatexBlock) {
+      return theme.latexStyle;
+    }
+
     return switch (type) {
-      .bold => theme.boldColor,
-      .italic => theme.italicColor,
-      .wikiOpen => theme.linkColor,
-      .latexInline || .latexDisplay => theme.latexColor,
-      .h1 || .ul || .ol => theme.headerColor,
-      _ => theme.tokenColor,
+      TokenType.bold => theme.boldStyle,
+      TokenType.italic => theme.italicStyle,
+      TokenType.strikethrough => theme.strikethroughStyle,
+      TokenType.inlineCode || TokenType.codeBlock => theme.inlineCodeStyle,
+      TokenType.wikiOpen => theme.linkStyle,
+      TokenType.latexInline ||
+      TokenType.latexDisplay ||
+      TokenType.latexBlock => theme.latexStyle,
+      TokenType.h1 ||
+      TokenType.h2 ||
+      TokenType.h3 ||
+      TokenType.h4 ||
+      TokenType.h5 ||
+      TokenType.h6 ||
+      TokenType.ul ||
+      TokenType.ol ||
+      TokenType.blockquote ||
+      TokenType.hr => theme.headerStyle,
+      _ => theme.textStyle,
     };
   }
 
