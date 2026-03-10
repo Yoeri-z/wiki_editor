@@ -15,7 +15,9 @@ class WikiEditorWorkspace extends StatefulWidget {
     this.highlighter,
     this.onChanged,
     this.isMultiline = true,
+    this.spacing = 8,
     this.label = 'Markdown Editor',
+    this.previewLabel = 'Markdown Preview',
     this.showPreview = false,
     this.useAdaptiveLayout = true,
   });
@@ -29,11 +31,17 @@ class WikiEditorWorkspace extends StatefulWidget {
   /// Callback when the text changes.
   final ValueChanged<String>? onChanged;
 
+  /// The spacing between the editor and preview;
+  final double spacing;
+
   /// Whether the editor should support multiple lines.
   final bool isMultiline;
 
   /// The label for the text field.
   final String label;
+
+  /// The label for the preview field.
+  final String previewLabel;
 
   /// Whether to show the preview widget in non-adaptive or narrow modes.
   final bool showPreview;
@@ -59,21 +67,6 @@ class _WikiEditorWorkspaceState extends State<WikiEditorWorkspace> {
     _controller.addListener(_handleTextChange);
   }
 
-  @override
-  void didUpdateWidget(covariant WikiEditorWorkspace oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.highlighter != widget.highlighter) {
-      final newController = MarkdownTextEditingController(
-        text: _controller.text,
-        highlighter: widget.highlighter,
-      );
-
-      _controller.dispose();
-      _controller = newController;
-    }
-  }
-
   void _handleTextChange() {
     widget.onChanged?.call(_controller.text);
     if (mounted) {
@@ -92,13 +85,14 @@ class _WikiEditorWorkspaceState extends State<WikiEditorWorkspace> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isWide = widget.useAdaptiveLayout &&
+        final isWide =
+            widget.useAdaptiveLayout &&
             constraints.maxWidth > 800 &&
             widget.isMultiline;
 
         if (isWide) {
           return Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: widget.spacing,
             children: [
               Expanded(
                 child: WikiTextEditor(
@@ -107,16 +101,29 @@ class _WikiEditorWorkspaceState extends State<WikiEditorWorkspace> {
                   label: widget.label,
                 ),
               ),
-              const VerticalDivider(width: 1),
               Expanded(
-                child: WikiPreview(data: _controller.text),
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: widget.label,
+                    alignLabelWithHint: true,
+                    border: const OutlineInputBorder(),
+                  ),
+                  child: WikiPreview(data: _controller.text),
+                ),
               ),
             ],
           );
         }
 
         return widget.showPreview && widget.isMultiline
-            ? WikiPreview(data: _controller.text)
+            ? InputDecorator(
+                decoration: InputDecoration(
+                  labelText: widget.previewLabel,
+                  alignLabelWithHint: true,
+                  border: const OutlineInputBorder(),
+                ),
+                child: WikiPreview(data: _controller.text),
+              )
             : WikiTextEditor(
                 controller: _controller,
                 isMultiline: widget.isMultiline,

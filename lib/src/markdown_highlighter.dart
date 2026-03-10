@@ -77,12 +77,9 @@ class MarkdownHighlighter {
       }
     }
 
-    // Sort matches by start index, and then by length (descending) to handle nested patterns if any
-    // Note: Simple regex approach might struggle with complex nesting, but for a lightweight editor it's usually fine.
+    // Sort matches by start index
     allMatches.sort((a, b) {
-      final res = a.start.compareTo(b.start);
-      if (res != 0) return res;
-      return b.end.compareTo(a.end);
+      return a.start.compareTo(b.start);
     });
 
     // Remove overlapping matches

@@ -75,16 +75,19 @@ $$
           ),
         ],
       ),
-      body: WikiEditorWorkspace(
-        initialValue: _markdownText,
-        showPreview: _showPreview,
-        useAdaptiveLayout: _useAdaptiveLayout,
-        highlighter: MarkdownHighlighter.material(context),
-        onChanged: (value) {
-          setState(() {
-            _markdownText = value;
-          });
-        },
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: WikiEditorWorkspace(
+          initialValue: _markdownText,
+          showPreview: _showPreview,
+          useAdaptiveLayout: _useAdaptiveLayout,
+          highlighter: MarkdownHighlighter.material(context),
+          onChanged: (value) {
+            setState(() {
+              _markdownText = value;
+            });
+          },
+        ),
       ),
     );
   }

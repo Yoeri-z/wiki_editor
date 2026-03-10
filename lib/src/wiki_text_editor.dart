@@ -15,33 +15,26 @@ class WikiTextEditor extends StatelessWidget {
   /// Callback when the text changes.
   final ValueChanged<String>? onChanged;
 
-  /// Optional padding around the editor.
-  final EdgeInsetsGeometry padding;
-
   const WikiTextEditor({
     super.key,
     required this.controller,
     this.isMultiline = true,
     this.label = 'Markdown Editor',
     this.onChanged,
-    this.padding = const EdgeInsets.all(8.0),
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: padding,
-      child: TextField(
-        controller: controller,
-        onChanged: onChanged,
-        maxLines: isMultiline ? null : 1,
-        decoration: InputDecoration(
-          labelText: label,
-          alignLabelWithHint: true,
-          border: const OutlineInputBorder(),
-        ),
-        textAlignVertical: TextAlignVertical.top,
+    return TextField(
+      controller: controller,
+      onChanged: onChanged,
+      maxLines: isMultiline ? null : 1,
+      decoration: InputDecoration(
+        labelText: label,
+        alignLabelWithHint: true,
+        border: const OutlineInputBorder(),
       ),
+      textAlignVertical: TextAlignVertical.top,
     );
   }
 }
