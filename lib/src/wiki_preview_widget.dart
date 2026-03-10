@@ -37,7 +37,7 @@ class WikiPreview extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
             ),
         clipBehavior: Clip.antiAlias,
-        child: Markdown(
+        child: MarkdownBody(
           data: data,
           selectable: selectable,
           extensionSet: md.ExtensionSet(
