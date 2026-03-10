@@ -8,44 +8,15 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
-      home: Builder(
-        builder: (context) {
-          final theme = Theme.of(context);
-
-          final primary = theme.primaryColor;
-          final textTheme = theme.textTheme;
-
-          return WikiEditorTheme(
-            themeData: WikiEditorThemeData(
-              boldStyle: textTheme.bodyMedium!.copyWith(
-                color: primary,
-                fontWeight: .w700,
-              ),
-              italicStyle: textTheme.bodyMedium!.copyWith(
-                color: primary,
-                fontStyle: .italic,
-              ),
-              strikethroughStyle: textTheme.bodyMedium!.copyWith(
-                color: primary,
-                decoration: .lineThrough,
-              ),
-              linkStyle: textTheme.bodyMedium!.copyWith(color: primary),
-              latexStyle: textTheme.bodyMedium!.copyWith(color: primary),
-              headerStyle: textTheme.bodyMedium!.copyWith(
-                color: primary,
-                fontWeight: .w700,
-              ),
-            ),
-            child: const MyHomePage(title: 'Flutter Demo Home Page'),
-          );
-        },
+      title: 'Wiki Editor Demo',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
       ),
+      home: const MyHomePage(title: 'Light Markdown Editor'),
     );
   }
 }
@@ -60,52 +31,60 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late final WikiController controller = WikiController();
-  void _rebuilder() => setState(() {});
+  String _markdownText = r"""# Welcome to Wiki Editor
 
-  @override
-  void initState() {
-    super.initState();
-    controller.addListener(_rebuilder);
-  }
+This is a **lightweight** markdown editor with syntax highlighting and LaTeX support.
 
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
+## LaTeX Example
+Inline: $E = mc^2$
+
+Block:
+$$
+\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+$$
+
+## Markdown Features
+- [x] Syntax highlighting in editor
+- [x] Responsive preview
+- [x] LaTeX support
+""";
+
+  bool _showPreview = false;
+  bool _useAdaptiveLayout = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-
         title: Text(widget.title),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Center(
-          child: Row(
-            spacing: 20,
-            mainAxisAlignment: .center,
-            children: [
-              SizedBox(
-                width: 400,
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: WikiCodeEditor(controller: controller),
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 400,
-                child: DisplayWidget(controller: controller),
-              ),
-            ],
+        actions: [
+          IconButton(
+            icon: Icon(
+              _useAdaptiveLayout ? Icons.devices : Icons.phonelink_lock,
+            ),
+            tooltip: 'Toggle Adaptive Layout',
+            onPressed: () =>
+                setState(() => _useAdaptiveLayout = !_useAdaptiveLayout),
           ),
-        ),
+          TextButton.icon(
+            onPressed: () => setState(() => _showPreview = !_showPreview),
+            icon: Icon(_showPreview ? Icons.edit : Icons.remove_red_eye),
+            label: Text(_showPreview ? 'Edit' : 'Preview'),
+            style: TextButton.styleFrom(foregroundColor: Colors.black),
+          ),
+        ],
+      ),
+      body: WikiEditorWorkspace(
+        initialValue: _markdownText,
+        showPreview: _showPreview,
+        useAdaptiveLayout: _useAdaptiveLayout,
+        highlighter: MarkdownHighlighter.material(context),
+        onChanged: (value) {
+          setState(() {
+            _markdownText = value;
+          });
+        },
       ),
     );
   }
