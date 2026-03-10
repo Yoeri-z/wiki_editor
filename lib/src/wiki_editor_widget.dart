@@ -12,6 +12,7 @@ class WikiEditorWorkspace extends StatefulWidget {
   const WikiEditorWorkspace({
     super.key,
     this.initialValue,
+    this.controller,
     this.highlighter,
     this.onChanged,
     this.isMultiline = true,
@@ -24,6 +25,9 @@ class WikiEditorWorkspace extends StatefulWidget {
 
   /// The initial text value for the editor.
   final String? initialValue;
+
+  /// Optional controller to control the state of the editor externally
+  final MarkdownTextEditingController? controller;
 
   /// Optional highlighter configuration for syntax highlighting.
   final MarkdownHighlighter? highlighter;
@@ -60,10 +64,13 @@ class _WikiEditorWorkspaceState extends State<WikiEditorWorkspace> {
   @override
   void initState() {
     super.initState();
-    _controller = MarkdownTextEditingController(
-      text: widget.initialValue,
-      highlighter: widget.highlighter,
-    );
+    _controller =
+        widget.controller ??
+        MarkdownTextEditingController(
+          text: widget.initialValue,
+          highlighter: widget.highlighter,
+        );
+
     _controller.addListener(_handleTextChange);
   }
 
