@@ -17,7 +17,8 @@ Add the following to your `pubspec.yaml`:
 ```yaml
 dependencies:
   wiki_editor:
-    path: ./ # Or the appropriate path/version once published
+    git:
+      url: https://github.com/Yoeri-z/wiki_editor.git
 ```
 
 ## Usage
