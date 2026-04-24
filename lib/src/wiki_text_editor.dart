@@ -9,8 +9,8 @@ class WikiTextEditor extends StatelessWidget {
   /// Whether the editor should be multiline.
   final bool isMultiline;
 
-  /// The label for the text field.
-  final String? label;
+  /// Decoration of the text field.
+  final InputDecoration? decoration;
 
   /// Callback when the text changes.
   final ValueChanged<String>? onChanged;
@@ -19,7 +19,7 @@ class WikiTextEditor extends StatelessWidget {
     super.key,
     required this.controller,
     this.isMultiline = true,
-    this.label,
+    this.decoration,
     this.onChanged,
   });
 
@@ -29,11 +29,7 @@ class WikiTextEditor extends StatelessWidget {
       controller: controller,
       onChanged: onChanged,
       maxLines: isMultiline ? null : 1,
-      decoration: InputDecoration(
-        labelText: label,
-        alignLabelWithHint: true,
-        border: const OutlineInputBorder(),
-      ),
+      decoration: decoration,
       textAlignVertical: TextAlignVertical.top,
     );
   }

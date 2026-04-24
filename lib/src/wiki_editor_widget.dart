@@ -17,7 +17,7 @@ class WikiEditorWorkspace extends StatefulWidget {
     this.onChanged,
     this.isMultiline = true,
     this.spacing = 8,
-    this.label = 'Markdown Editor',
+    required this.decoration,
     this.previewLabel = 'Markdown Preview',
     this.showPreview = false,
     this.useAdaptiveLayout = true,
@@ -42,7 +42,7 @@ class WikiEditorWorkspace extends StatefulWidget {
   final bool isMultiline;
 
   /// The label for the text field.
-  final String label;
+  final InputDecoration decoration;
 
   /// The label for the preview field.
   final String previewLabel;
@@ -105,16 +105,12 @@ class _WikiEditorWorkspaceState extends State<WikiEditorWorkspace> {
                 child: WikiTextEditor(
                   controller: _controller,
                   isMultiline: true,
-                  label: widget.label,
+                  decoration: widget.decoration,
                 ),
               ),
               Expanded(
                 child: InputDecorator(
-                  decoration: InputDecoration(
-                    labelText: widget.label,
-                    alignLabelWithHint: true,
-                    border: const OutlineInputBorder(),
-                  ),
+                  decoration: widget.decoration,
                   child: WikiPreview(data: _controller.text),
                 ),
               ),
@@ -134,7 +130,7 @@ class _WikiEditorWorkspaceState extends State<WikiEditorWorkspace> {
             : WikiTextEditor(
                 controller: _controller,
                 isMultiline: widget.isMultiline,
-                label: widget.label,
+                decoration: widget.decoration,
               );
       },
     );
