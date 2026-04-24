@@ -10,7 +10,7 @@ class WikiTextEditor extends StatelessWidget {
   final bool isMultiline;
 
   /// The label for the text field.
-  final String label;
+  final String? label;
 
   /// Callback when the text changes.
   final ValueChanged<String>? onChanged;
@@ -19,7 +19,7 @@ class WikiTextEditor extends StatelessWidget {
     super.key,
     required this.controller,
     this.isMultiline = true,
-    this.label = 'Markdown Editor',
+    this.label,
     this.onChanged,
   });
 
